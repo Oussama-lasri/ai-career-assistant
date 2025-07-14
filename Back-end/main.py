@@ -1,6 +1,16 @@
-def main():
-    print("Hello from back-end!")
+from fastapi import FastAPI
 
 
-if __name__ == "__main__":
-    main()
+
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return("Hello from back-end!")
+
+
+
+
+# if __name__ == "__main__":
+#     main()
