@@ -1,0 +1,30 @@
+fastapi
+uvicorn
+
+langchain
+chromadb
+tiktoken
+
+pypdf
+python-docx
+unstructured
+
+
+# jwt
+pyjwt
+# authentication
+passlib[bcrypt]
+
+
+# ORM and database
+sqlalchemy
+psycopg2-binary
+
+# langchian 
+langchain
+langchain-core
+langchain-openai
+langchain-community
+langchain-cli
+
+python-dotenv
