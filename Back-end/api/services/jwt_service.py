@@ -29,4 +29,13 @@ class JwtService:
         return Token(access_token=encoded_jwt, token_type="bearer")
         # return encoded_jwt
         
+    def decode_jwt(self, token: str) -> dict:
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
   
