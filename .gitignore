@@ -1,0 +1,32 @@
+# Ignore all __pycache__ directories recursively
+**/__pycache__/
+**/*.py[cod]
+
+# Ignore all virtual environments recursively
+**/venv/
+**/.venv/
+**/env/
+**/.env/
+
+# Ignore env files
+**/.env
+**/.env.*
+
+# Ignore VSCode & PyCharm project settings
+**/.vscode/
+**/.idea/
+
+# Ignore pytest cache
+**/.pytest_cache/
+**/.mypy_cache/
+
+# Ignore FastAPI & build artifacts
+**/*.log
+**/*.sqlite3
+**/*.db
+**/*.egg-info/
+**/dist/
+**/build/
+
+# macOS
+.DS_Store
