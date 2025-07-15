@@ -9,6 +9,7 @@ from ..core.database import DbSession
 from ..schemas.User_schema import UserCreate 
 from fastapi.security import OAuth2PasswordRequestForm
 from ..schemas.Token_schema import Token
+from ..services.jwt_service import JwtService
 
 
 class AuthenticationRouter:
@@ -24,10 +25,17 @@ class AuthenticationRouter:
         @self.router.post("/login")
         async def login( db: DbSession  ,
                         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-                        ) -> Token:
-            self.authentication_service.authenticate_user(db,form_data.username, form_data.password)
-            # Logic for user login
-            return 
+                        ):
+            user = self.authentication_service.authenticate_user(db,form_data.username, form_data.password)
+            if not user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Incorrect username or password",
+                )
+            
+            jwtService = JwtService()
+            token = jwtService.create_access_token(data={"sub": user.email})            
+            return token
 
         @self.router.post("/register")
         async def register( db: DbSession ,user: UserCreate = Depends(UserCreate),):

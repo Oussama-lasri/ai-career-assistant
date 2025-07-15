@@ -15,10 +15,15 @@ class authenticationService:
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/authentication/login")
     
     
-    def authenticate_user(self, db: Session, username: str, password: str):
-        user_repository = UserRepository(db)
+    def authenticate_user(self, db: Session, email: str, password: str) -> UserInDB | None:
+        user = self.get_user(db,email)
+        if not user :
+            return None
+        if not self.verify_password(password, user.hashed_password):
+            return None
+        return user
         
-        pass
+        
 
     def create_user(self, db: Session, user: UserCreate):
         new_user = User(**user.model_dump(exclude={"password"}))
@@ -45,3 +50,6 @@ class authenticationService:
             return None 
 
         return UserInDB.model_validate(user_dict)
+    
+    def verify_password(self,plain_password, hashed_password):
+        return self.pwd_context.verify(plain_password, hashed_password)
