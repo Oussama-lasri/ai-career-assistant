@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from api.utils.init_db import create_tables
 from api.routes.Authentication  import auth_router
+from api.core.middlewares import AuthMiddleware
 
 
 
 
 app = FastAPI()
+app.add_middleware(AuthMiddleware)
 
 # Initialize the database and create tables
 # create_tables()
