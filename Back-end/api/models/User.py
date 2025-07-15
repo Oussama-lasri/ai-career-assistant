@@ -13,3 +13,6 @@ class User(Base):
     full_name = Column(String, nullable=True)
     disabled = Column(String, default=False)
     created_at = Column(DateTime, nullable=False,default=datetime.now)
+    
+    # Relationships
+    resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")

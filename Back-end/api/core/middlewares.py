@@ -4,6 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from ..services.jwt_service import JwtService
 
 PUBLIC_PATHS = [
+    "/",
     "/authentication/login",
     "/authentication/register",
     "/openapi.json",
