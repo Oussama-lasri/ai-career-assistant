@@ -11,4 +11,4 @@ class Resume(Base):
     upload_timestamp = Column(DateTime, nullable=False)
 
     # Relationships
-    user = relationship("users", back_populates="resumes")
+    user = relationship("User", back_populates="resumes")

@@ -14,4 +14,4 @@ class ApplicationLog(Base):
     timestamp = Column(DateTime, nullable=False)
 
     # Relationships
-    user = relationship("users", back_populates="application_logs") 
+    user = relationship("User", back_populates="application_logs") 
