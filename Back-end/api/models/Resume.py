@@ -6,9 +6,9 @@ class Resume(Base):
     __tablename__ = 'resumes'
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     filename = Column(String, nullable=False)
     upload_timestamp = Column(DateTime, nullable=False)
 
     # Relationships
-    user = relationship("User", back_populates="resumes")
+    user = relationship("users", back_populates="resumes")

@@ -10,7 +10,7 @@ app = FastAPI()
 app.add_middleware(AuthMiddleware)
 
 # Initialize the database and create tables
-# create_tables()
+create_tables()
 
 app.include_router(auth_router)
 
