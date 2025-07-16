@@ -15,4 +15,5 @@ class User(Base):
     created_at = Column(DateTime, nullable=False,default=datetime.now)
     
     # Relationships
-    resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")
+    resumes = relationship("Resume", back_populates="user", cascade="all, delete")
+    application_logs = relationship("ApplicationLog",back_populates="user",cascade="all, delete")
