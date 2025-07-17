@@ -36,3 +36,10 @@ class DocumentProcessingService:
         for i, chunk in enumerate(chunks):
             chunk.metadata.update({"chunk_index": i, "chunk_size": len(chunk.page_content)})
         return chunks
+
+    @staticmethod
+    def index_document_to_chroma() :
+        # return true or false
+        pass
+    
+    
