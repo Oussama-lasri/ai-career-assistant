@@ -40,9 +40,18 @@ class DocumentProcessingService:
             chunk.metadata.update({"chunk_index": i, "chunk_size": len(chunk.page_content)})
         return chunks
 
-    @staticmethod
-    def index_document_to_chroma() :
-        # return true or false
+    @classmethod
+    def store_documents(cls,docs, store_name):  
+        persistent_directory = os.path.join(cls.db_dir, store_name)
+        if not os.path.exists(persistent_directory):
+            print(f"\n--- Creating vector store {store_name} ---")
+            db = Chroma.from_documents(
+                docs, cls.embeddings, persist_directory=persistent_directory
+            )
+            print(f"--- Finished creating vector store {store_name} ---")
+        else:
+            print(
+                f"Vector store {store_name} already exists. No need to initialize.")
         pass
     
     @classmethod
@@ -59,7 +68,7 @@ class DocumentProcessingService:
                 f"Vector store {store_name} already exists. No need to initialize.")
             
     
-    def get_strategy(strategy:str , ):
+    def get_strategy(strategy:str):
         if strategy == "recursive":
              return RecursiveCharacterTextSplitter
         #  add more strateges in future 
