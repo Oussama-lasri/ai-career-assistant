@@ -12,13 +12,12 @@ class ResumeService:
 
     UPLOAD_DIR = "uploads/resumes"
 
-    def save_file(user_id: int, file: UploadFile) -> str:
+    def save_file(self ,user_id: int, file: UploadFile) -> str:
         allowed_extensions = ['.pdf', '.docx', '.html']
         extension = os.path.splitext(file.filename)[1].lower()
 
         if extension not in allowed_extensions:
             raise HTTPException(status_code=400, detail="Unsupported file type.")
-
         user_folder = os.path.join(ResumeService.UPLOAD_DIR, str(user_id))
         os.makedirs(user_folder, exist_ok=True)
 
@@ -30,7 +29,7 @@ class ResumeService:
 
         return file_path
 
-    def process_resume(db: Session, file_path: str, user_id: int):
+    def process_resume(self ,db: Session, file_path: str, user_id: int):
         # Step 1: Load document
         docs = DocumentProcessingService.load_document(file_path)
 
@@ -52,8 +51,8 @@ class ResumeService:
         resume_repository.create_resume(resume)
 
         # Optionally split and store in vector DB
-        # chunks = DocumentProcessingService.split_documents(docs)
-        # RAGService().store_documents(chunks)
+        chunks = DocumentProcessingService.split_documents(docs)
+        DocumentProcessingService.store_documents(chunks,"resume_db_1234")
         # return chunks
 
         return docs  # ou return resume si tu préfères
