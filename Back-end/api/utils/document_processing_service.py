@@ -1,11 +1,17 @@
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, UnstructuredHTMLLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings ,ChatOpenAI
+from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from typing import List
 import os
 from datetime import datetime
 
 class DocumentProcessingService:
+   
+    embeddings = OpenAIEmbeddings()  
+    db_dir = "db"
+        
 
     @staticmethod
     def load_document(file_path: str) -> List[Document]:
@@ -27,10 +33,7 @@ class DocumentProcessingService:
 
     @staticmethod
     def split_documents(documents: List[Document], chunk_size: int = 1000, chunk_overlap: int = 100, strategy: str = "recursive") -> List[Document]:
-        if strategy == "recursive":
-            splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-        else:
-            raise ValueError(f"Unsupported splitting strategy: {strategy}")
+        splitter = DocumentProcessingService.get_strategy(strategy)(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         
         chunks = splitter.split_documents(documents)
         for i, chunk in enumerate(chunks):
@@ -42,4 +45,23 @@ class DocumentProcessingService:
         # return true or false
         pass
     
+    @classmethod
+    def create_vector_store(cls,docs, store_name):
+        persistent_directory = os.path.join(cls.db_dir, store_name)
+        if not os.path.exists(persistent_directory):
+            print(f"\n--- Creating vector store {store_name} ---")
+            db = Chroma.from_documents(
+                docs, cls.embeddings, persist_directory=persistent_directory
+            )
+            print(f"--- Finished creating vector store {store_name} ---")
+        else:
+            print(
+                f"Vector store {store_name} already exists. No need to initialize.")
+            
     
+    def get_strategy(strategy:str , ):
+        if strategy == "recursive":
+             return RecursiveCharacterTextSplitter
+        #  add more strateges in future 
+        else:
+            raise ValueError(f"Unsupported splitting strategy: {strategy}")
