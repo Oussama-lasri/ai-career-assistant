@@ -1,16 +1,21 @@
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, UnstructuredHTMLLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings ,ChatOpenAI
+from langchain.embeddings import HuggingFaceEmbeddings  
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from typing import List
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+
 
 class DocumentProcessingService:
-   
-    embeddings = OpenAIEmbeddings()  
-    db_dir = "db"
+    load_dotenv()
+    # embeddings = OpenAIEmbeddings()  
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2") 
+    db_dir = "chroma_db"
         
 
     @staticmethod

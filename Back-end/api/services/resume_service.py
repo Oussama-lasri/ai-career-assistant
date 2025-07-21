@@ -48,11 +48,15 @@ class ResumeService:
             filename=os.path.basename(file_path),
             upload_timestamp=datetime.utcnow()
         )
-        resume_repository.create_resume(resume)
+        resume_db = resume_repository.create_resume(resume)
 
         # Optionally split and store in vector DB
         chunks = DocumentProcessingService.split_documents(docs)
-        DocumentProcessingService.store_documents(chunks,"resume_db_1234")
+        store_name = f"resume_{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        DocumentProcessingService.store_documents(chunks, store_name)
+        # DocumentProcessingService.store_documents(chunks,f"resume{datetime.now()}")
         # return chunks
 
         return docs  # ou return resume si tu préfères
+
+        
