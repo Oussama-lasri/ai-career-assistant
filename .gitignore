@@ -31,3 +31,17 @@
 # macOS
 .DS_Store
 .guide.txt
+
+
+# chroma db 
+chroma_db/
+*.parquet
+*.pkl
+*.lock
+*.sqlite
+
+db/
+*.parquet
+*.pkl
+*.lock
+*.sqlite
