@@ -29,17 +29,30 @@ class ResumeService:
 
         return file_path
 
-    def process_resume(self ,db: Session, file_path: str, user_id: int):
+    def process_resume(self, db: Session, file_path: str, user_id: int):
+        print(f"\n=== PROCESSING RESUME ===")
+        print(f"File path: {file_path}")
+        print(f"User ID: {user_id}")
+        
         # Step 1: Load document
         docs = DocumentProcessingService.load_document(file_path)
+        print(f"Loaded documents: {len(docs)}")
+        
+        if docs:
+            print(f"First document content length: {len(docs[0].page_content)}")
+            print(f"First document content preview: {docs[0].page_content[:200]}...")
+        else:
+            print("ERROR: No documents loaded from file!")
+            return None
 
         # Step 2: Add metadata
         metadata = {
             "user_id": user_id,
             "source": os.path.basename(file_path),
-            "uploaded_at": datetime.utcnow().isoformat()
+            "uploaded_at": datetime.now().isoformat()
         }
         docs = DocumentProcessingService.add_metadata(docs, metadata)
+        print(f"Added metadata: {metadata}")
 
         # Create resume record in DB
         resume_repository = ResumeRepository(db)
@@ -50,13 +63,26 @@ class ResumeService:
         )
         resume_db = resume_repository.create_resume(resume)
 
-        # Optionally split and store in vector DB
+        # Split documents
         chunks = DocumentProcessingService.split_documents(docs)
-        store_name = f"resume_{user_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        print(f"Created chunks: {len(chunks)}")
+        
+        if chunks:
+            print(f"First chunk content length: {len(chunks[0].page_content)}")
+            print(f"First chunk metadata: {chunks[0].metadata}")
+            print(f"First chunk content preview: {chunks[0].page_content[:200]}...")
+        else:
+            print("ERROR: No chunks created!")
+            return None
+        
+        # Store in vector DB
+        store_name = f"resume_{user_id}"
         DocumentProcessingService.store_documents(chunks, store_name)
-        # DocumentProcessingService.store_documents(chunks,f"resume{datetime.now()}")
-        # return chunks
+        
+        # Verify storage
+        debug_info = DocumentProcessingService.debug_collection(store_name)
+        print(f"Final verification: {debug_info}")
 
-        return docs  # ou return resume si tu préfères
+        return docs
 
         
