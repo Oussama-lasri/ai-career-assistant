@@ -84,5 +84,43 @@ class ResumeService:
         print(f"Final verification: {debug_info}")
 
         return docs
+    
+    
+    def ask_based_on_resume(self, user_id: int, question: str):
+        """
+        Ask a question based on the user's resume.
+        """
+        print(f"\n=== ASKING BASED ON RESUME ===")
+        print(f"User ID: {user_id}")
+        print(f"Question: {question}")
+
+        # Get vector store for user's resume
+        vector_store = DocumentProcessingService.get_vector_store(f"resume_{user_id}")
+        
+        if not vector_store:
+            raise HTTPException(status_code=404, detail="Resume not found for this user.")
+        
+        # Retrieve relevant documents based on the user's question
+        retrieved_docs = vector_store.similarity_search(question, k=5)
+        
+        if not retrieved_docs:
+            return {
+                "answer": "I don't have access to your resume information. Please upload your resume first.",
+                "sources": []
+            }
+        
+        print(f"Retrieved {len(retrieved_docs)} relevant documents")
+        
+        # Combine retrieved documents into context
+        context = "\n\n".join([
+            f"Resume Section {i+1}:\n{doc.page_content}" 
+            for i, doc in enumerate(retrieved_docs)
+        ])
+        
+        return {
+            "question": question,
+            "context": context,
+            "relevant_documents": retrieved_docs
+        }
 
         
