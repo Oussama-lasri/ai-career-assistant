@@ -4,6 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage 
 from typing import Annotated
 from ..services.resume_service import ResumeService
+from ..services.rag_service import RAGService
 from ..services.jwt_service import JwtService
 from ..core.database import DbSession
 import os
@@ -18,6 +19,7 @@ class resumeRouter:
     def __init__(self):
         self.router = APIRouter(prefix="/resume", tags=["Resume"])
         self.resumeService = ResumeService()
+        self.RAGService = RAGService()
         self.setup_routes()
 
     def setup_routes(self):
@@ -200,6 +202,11 @@ class resumeRouter:
             question: str   # Default question for testing
             
         ):
+            # 1. Auth
+            # 2. Load vector store
+            # 3. Search similar docs
+            # 4. Prompt construction
+            # 5. Call model
             """
             RAG-based endpoint: Ask questions about the user's resume
             """
@@ -225,64 +232,14 @@ class resumeRouter:
                 # 4. Construct RAG prompt
                 context = "\n\n".join([doc.page_content for doc in relevant_docs])
                 
-                # You are a helpful AI assistant that provides information based on the user's resume.
-                # You have access to the user's resume content through the provided context documents.
-                
-                # Instructions:
-                # - Answer questions accurately based ONLY on the information in the resume
-                # - If the information is not in the resume, clearly state that
-                # - Be conversational and helpful
-                # - Provide specific details when available (dates, company names, skills, etc.)
-                # - If asked about experience, mention relevant projects, jobs, or education
-                # """
-                
-                # system_prompt = (
-                #     "You are a helpful assistant that answers questions based ONLY on the user's resume content.\n"
-                #     "If the information is not available, respond with 'Information not found in the resume.'\n"
-                #     "Be detailed and clear.\n"
-                # )
-                # system_prompt = (
-                #    """You are an AI career assistant helping users improve their resumes and career prospects.
-                #     Your responses must rely only on the provided resume context. 
-                #     If you don’t find enough relevant data in the resume, state that clearly and suggest improvements.
-                #     Use a professional, friendly tone.""" )
-                
-                system_prompt = """
-                    You are a helpful AI career assistant that provides personalized answers based on the user's resume.
-
-                    You have access to the user's resume through provided context documents (stored in chunks from a vector database).
-
-                    Instructions:
-                    - ONLY answer based on the content found in the resume context.
-                    - If the information is not available in the resume, clearly respond with: "Information not found in the resume."
-                    - Do not make assumptions or hallucinate facts.
-                    - Be professional, supportive, and conversational in tone.
-                    - Provide specific details from the resume whenever possible (e.g., job titles, companies, dates, skills, certifications, projects).
-                    - When asked about experience, reference relevant work history, education, or projects from the resume.
-                    - If something is missing or could be improved, provide constructive suggestions for enhancing the resume.
-                    - Structure responses clearly. Use bullet points or headings if needed to improve readability.
-
-                    Always ensure that your answers are grounded in the resume context provided.
-                    """ 
-
-
-                final_prompt = f"{system_prompt}\n\nResume Context:\n{context}\n\nUser Question: {question}"
-
-                # 5. Call generative model (Gemini)
-                model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
-                response = model.invoke([HumanMessage(content=final_prompt)])
+                response = self.RAGService.ask_model(context, question) 
+                print(f"Model response: {response.content}")
 
                 return {
                     "status": "success",
                     "user_id": user_id,
                     "question": question,
-                    "answer": response.content,
-                    # "sources": [
-                    #     {
-                    #         "metadata": doc.metadata,
-                    #         "preview": doc.page_content[:200]  # optional
-                    #     } for doc in relevant_docs
-                    # ]
+                    "answer": response,
                 }
 
             except Exception as e:
