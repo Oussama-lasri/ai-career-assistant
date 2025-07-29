@@ -239,7 +239,7 @@ class resumeRouter:
                     "status": "success",
                     "user_id": user_id,
                     "question": question,
-                    "answer": response,
+                    "answer": response.content,
                 }
 
             except Exception as e:
