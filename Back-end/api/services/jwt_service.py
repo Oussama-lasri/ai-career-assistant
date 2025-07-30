@@ -18,8 +18,9 @@ class JwtService:
     def __init__(self):
         self.SECRET_KEY = os.getenv("SECRET_KEY")
         self.ALGORITHM = os.getenv("ALGORITHM", "HS256")
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
         
-    def create_access_token(self,data: dict, expires_delta: timedelta  | None = None) -> Token:
+    def create_access_token(self, data: dict, expires_delta: timedelta = None) -> Token:
         to_encode = data.copy()
         print("Data to encode:", to_encode)
         if expires_delta:
