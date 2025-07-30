@@ -102,6 +102,7 @@ class ResumeService:
         
         # Retrieve relevant documents based on the user's question
         retrieved_docs = vector_store.similarity_search(question, k=5)
+        print(f"Retrieved {len(retrieved_docs)} relevant documents")
         
         if not retrieved_docs:
             return {
