@@ -54,12 +54,20 @@ class RAGService:
         return f"""Here is the resume context:\n\n{context}\n\nUser's question: {question}"""
 
     def ask_model(self, context: str, question: str , service_type: str = "answer_question"):
-        # .get(service_type, fallback)
-        system_prompt = self.services.get(service_type, self._default_system_prompt)()
-        human_prompt = self.build_human_prompt(context, question)
+        print(f"\n=== ASKING MODEL ===")
+        print(f"Context length: {len(context)} characters")
+        print(f"Question: {question}")
+        try : 
+            # .get(service_type, fallback)
+            # system_prompt = self.services.get(service_type, self._default_system_prompt)()
+            system_prompt = self.services.get(service_type) or self._default_system_prompt()
+            print(f"Using system prompt: {system_prompt}")
+            human_prompt = self.build_human_prompt(context, question)
 
-        response = self.model.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=human_prompt),
-        ])
-        return response
+            response = self.model.invoke([
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=human_prompt),
+            ])
+            return response
+        except Exception as e:
+            return (f"Error during model invocation: {e}")
