@@ -30,9 +30,9 @@ This is the pipeline used in the AI Career Assistant app:
 graph TD
     A[User Uploads Resume] --> B[Resume Parsing & Preprocessing]
     B --> C[Skill & Experience Extraction]
-    C --> D[Embedding & Vector Storage (ChromaDB)]
-    D --> E[Query Handling (User Questions)]
-    E --> F[RAG-based Answer Generation (LLM)]
+    C --> D[Embedding & Vector Storage  - ChromaDB ]
+    D --> E[Query Handling  - User Questions]
+    E --> F[RAG-based Answer Generation  - LLM]
     F --> G[Response to User]
 ```
 
