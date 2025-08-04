@@ -28,10 +28,10 @@ AI-powered intelligent career assistant that uses Retrieval-Augmented Generation
 graph TD
     A[Upload Resume] --> B[Split Text with RecursiveCharacterTextSplitter]
     B --> C[Generate Embeddings with LLM]
-    C --> D[Store in ChromaDB (Vector Store)]
+    C --> D[Store in ChromaDB - Vector Store]
     D --> E[Ask Questions via API]
-    E --> F[Query Vector Store & Generate Answer]
-    
+    E --> F[Query Vector Store and Generate Answer]
+
 
 ##  Getting Started
 
