@@ -27,10 +27,10 @@ AI-powered intelligent career assistant that uses Retrieval-Augmented Generation
 
 This is the pipeline used in the AI Career Assistant app:
 ```mermaid
-graph LR
+flowchart TD
     A[User Uploads Resume] --> B[Resume Parsing & Preprocessing]
     B --> C[Skill & Experience Extraction]
-    C --> D[Embedding & Vector Storage  - ChromaDB ]
+    C --> D[(Embedding & Vector Storage  - ChromaDB)]
     D --> E[Query Handling  - User Questions]
     E --> F[RAG-based Answer Generation  - LLM]
     F --> G[Response to User]
