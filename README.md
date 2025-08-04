@@ -22,18 +22,18 @@ AI-powered intelligent career assistant that uses Retrieval-Augmented Generation
 
 - **Frontend:** Flutter , Next.js + Tailwind CSS (planned)
 
-## ⚙️ Architecture – Pipeline
+```markdown
+#  Architecture – Pipeline
+
+This is the pipeline used in the AI Career Assistant app:
 
 ```mermaid
 graph TD
     A[Upload Resume] --> B[Split Text with RecursiveCharacterTextSplitter]
-    B --> C[Generate Embeddings with LLM]
+    B --> C[Generate Embeddings]
     C --> D[Store in ChromaDB - Vector Store]
     D --> E[Ask Questions via API]
-    E --> F[Query Vector Store and Generate Answer]
-
-
-##  Getting Started
+    E --> F[Query Vector Store and Generate Answer]##  Getting Started
 
 
 
