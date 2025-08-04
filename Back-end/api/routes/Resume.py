@@ -56,144 +56,7 @@ class resumeRouter:
 
             return {"message": f"Resume uploaded successfully, file name: {file.filename}"}
 
-        
-    #     @self.router.get("/ask")
-    #     def ask(
-    #         token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="authentication/login"))],
-    #         db: DbSession,
-    #     ):
-    # #         Guidelines:
-    # # - Only answer based on the information provided in the resume context
-    # # - If the information is not available in the resume, clearly state that
-    # # - Be specific and cite relevant details from the resume
-    # # - Maintain a professional and helpful tone
-    #         contextualize_q_system_prompt= """            
-    #         You are a helpful AI assistant that provides information based on the user's resume.
-    #         The user has uploaded their resume, and you can answer questions about it.
-    #         Use the information from the resume to provide accurate and relevant answers. 
-    #         """
-            
-    #         jwt_service = JwtService()
-    #         user = jwt_service.get_current_user(db, token)
-    #         user_id = user.id
-        
-    #         vector_store = DocumentProcessingService.get_vector_store(f"resume_{str(user_id)}")
-            
-    #         retrieve_query = "What is the user's name?"
-    #         print(f"Retrieving documents for query: {retrieve_query}")
-    #         retrieved_docs = vector_store.similarity_search(retrieve_query, k=20)
-    #         print(f"Retrieved {len(retrieved_docs)} documents.")
-    #         if not retrieved_docs:
-    #             raise HTTPException(status_code=404, detail="No documents found for the query.")
-    #         print(f"First retrieved document content: {retrieved_docs[0].page_content[:200]}...")
-    #         print(f"First retrieved document metadata: {retrieved_docs[0].metadata}")
-    #         return {
-    #             "retrieved_documents": [
-    #                 {"content": doc.page_content, "metadata": doc.metadata} for doc in retrieved_docs
-    #             ]
-    #         }
-            
-        
-    #     @self.router.get("/debug/{user_id}")
-    #     def debug_collection(user_id: int):
-    #         store_name = f"resume_{user_id}"
-    #         debug_info = DocumentProcessingService.debug_collection(store_name)
-    #         return {
-    #             "collection_name": store_name,
-    #             "debug": debug_info
-    #         }
-        @self.router.get("/ask2")
-        def ask(
-            token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="authentication/login"))],
-            db: DbSession,
-            question: str = "What is the user's name?",  # Default question for testing
-            
-        ):
-            model = ChatGoogleGenerativeAI(
-                model="gemini-1.5-flash",
-                client_options=None,
-                transport=None,
-                additional_headers=None,
-                client=None,
-                async_client=None
-            )
-            system_prompt = """
-                You are a helpful AI assistant that provides information based on the user's resume.
-                You have access to the user's resume content through the provided context documents.
-                
-                Instructions:
-                - Answer questions accurately based ONLY on the information in the resume
-                - If the information is not in the resume, clearly state that
-                - Be conversational and helpful
-                - Provide specific details when available (dates, company names, skills, etc.)
-                - If asked about experience, mention relevant projects, jobs, or education
-                """
-            
-            
-
-            
-            try:
-                # Get current user
-                jwt_service = JwtService()
-                user = jwt_service.get_current_user(db, token)
-                user_id = user.id
-                
-                # Get vector store
-                vector_store = DocumentProcessingService.get_vector_store(f"resume_{str(user_id)}")
-                
-                print(f"Testing with question: {question}")
-                print(f"User ID: {user_id}")
-                
-                system_message = SystemMessage(content=system_prompt)
-                user_prompt = HumanMessage(content=question)
-                messages = [system_message, user_prompt]
-                
-                response = model.invoke(messages)
-                
-                # Retrieve relevant documents
-                retrieved_docs = vector_store.similarity_search(question, k=3)
-                
-                if not retrieved_docs:
-                    return {
-                        "status": "error",
-                        "message": "No documents found",
-                        "question": question,
-                        "user_id": user_id
-                    }
-                
-                print(f"Found {len(retrieved_docs)} documents")
-                
-                # Simple response - just return the relevant content
-                return {
-                    "status": "success",
-                    "question": question,
-                    "user_id": user_id,
-                    "total_documents_found": len(retrieved_docs),
-                    # "relevant_content": [
-                    #     {
-                    #         "content": doc.page_content,
-                    #         "metadata": {
-                    #             "source": doc.metadata.get("source", "unknown"),
-                    #             "user_id": doc.metadata.get("user_id", "unknown")
-                    #         }
-                    #     }
-                    #     for doc in retrieved_docs
-                    # ]
-                }
-                
-            except ValueError as e:
-                return {
-                    "status": "error",
-                    "message": f"Collection not found: {str(e)}",
-                    "suggestion": "Upload a resume first"
-                }
-                
-            except Exception as e:
-                return {
-                    "status": "error", 
-                    "message": f"Error: {str(e)}",
-                    "question": question
-                }
+    
                 
         @self.router.get("/ask")
         def ask_resume(
@@ -221,6 +84,8 @@ class resumeRouter:
 
                 # 3. Retrieve relevant resume chunks
                 relevant_docs = vector_store.similarity_search(question, k=3)
+                print(f"Retrieved {len(relevant_docs)} relevant documents")
+
 
                 if not relevant_docs:
                     return {
@@ -231,9 +96,10 @@ class resumeRouter:
 
                 # 4. Construct RAG prompt
                 context = "\n\n".join([doc.page_content for doc in relevant_docs])
+                print(f"Context length: {context} characters")
                 
-                response = self.RAGService.ask_model(context, question) 
-                print(f"Model response: {response.content}")
+                response = self.RAGService.ask_model_with_question(context = context , question = question) 
+                # print(f"Model response: {response.content}")
 
                 return {
                     "status": "success",
@@ -247,6 +113,131 @@ class resumeRouter:
                     "status": "error",
                     "message": f"Failed to answer question: {str(e)}"
                 }
+
+        @self.router.get("/rate")
+        def rate_resume(
+            token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="authentication/login"))],
+            db: DbSession,
+        ):
+            """
+            Rate the user's resume using AI based on all available resume content.
+            """
+            
+            try:
+                # 1. Authenticate user
+                print(f"\n=== RATING RESUME ===")
+                jwt_service = JwtService()
+                user = jwt_service.get_current_user(db , token)
+                user_id = user.id
+
+                # 2. Load the vector store
+                vector_store = DocumentProcessingService.get_vector_store(f"resume_{user_id}")
+
+                # 3. Retrieve relevant documents (whole resume or top-k)
+                resume_docs = vector_store.similarity_search("Rate this resume", k=15)
+                if not resume_docs:
+                    raise HTTPException(status_code=404, detail="No resume content found for rating")
+
+                # 4. Combine context from documents
+                context = "\n\n".join([doc.page_content for doc in resume_docs])
+                print(f"Resume context length: {len(context)} characters")
+
+                # 5. Ask model using RAGService
+                response = self.RAGService.ask_model(context=context, service_type="rate_resume")
+
+                return {
+                    "status": "success",
+                    "user_id": user_id,
+                    "service": "rate_resume",
+                    "answer": response.content if hasattr(response, "content") else response,
+                }
+
+            except HTTPException as http_err:
+                raise http_err
+
+            except Exception as e:
+                return {
+                    "status": "error",
+                    "message": f"Failed to rate resume: {str(e)}"
+                }
+                
+        @self.router.get("/service/{service_type}/pipeline")
+        def resume_service_pipeline(
+                service_type: str,
+                token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="authentication/login"))],
+                db: DbSession,
+                question: str = None
+            ):
+                """
+                Use the complete RAG pipeline from RAGService (alternative approach)
+                """
+                
+                
+                # Validate service type
+                valid_services = ["answer_question", "rate_resume", "suggest_improvements", "analyze_skills"]
+                if service_type not in valid_services:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid service type. Valid options: {', '.join(valid_services)}"
+                    )
+                
+                
+                if service_type == "answer_question" and not question:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Question parameter is required for 'answer_question' service"
+                    )
+                
+                try:
+                    # Authenticate
+                    jwt_service = JwtService()
+                    user = jwt_service.get_current_user(db, token)
+                    user_id = user.id
+                    
+                    print(f"\n=== PIPELINE SERVICE: {service_type.upper()} ===")
+                    print(f"User ID: {user_id}")
+
+                    # Use RAGService complete pipeline
+                    if service_type == "answer_question":
+                        response = self.RAGService.get_response(
+                            question=question,
+                            service_type=service_type
+                        )
+                    else:
+                        # For non-question services, use a generic query
+                        generic_query = f"Analyze resume for {service_type}"
+                        print(f"Using generic query: {generic_query}")
+                        response = self.RAGService.get_response(
+                            question=f"Analyze resume for {service_type}",
+                            service_type=service_type,
+                            k=15
+                        )
+                        return response
+
+                    return {
+                        "status": "success",
+                        "user_id": user_id,
+                        "service_type": service_type,
+                        "question": question if question else None,
+                        "answer": response.content if hasattr(response, "content") else str(response),
+                        "method": "pipeline"
+                    }
+
+                except ValueError as e:
+                    return {
+                        "status": "error",
+                        "message": f"Vector store not found: {str(e)}",
+                        "suggestion": "Upload a resume first",
+                        "service_type": service_type
+                    }
+                except Exception as e:
+                    return {
+                        "status": "error",
+                        "message": f"Failed to process {service_type}: {str(e)}",
+                        "service_type": service_type
+                    }
+
+            
 resume_router = resumeRouter().router
 
 
